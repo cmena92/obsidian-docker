@@ -14,9 +14,11 @@ services:
     volumes:
       - obsidian-config:/config
       - ./vault:/config/Obsidian\ Vault   # bind mount: datos SIEMPRE en el host
+      - ./custom-init:/custom-cont-init.d  # scripts de init personalizados
     ports:
       - "3010:3000"   # Web UI (KasmVNC) — evita conflicto con otros servicios
-      - "127.0.0.1:27123:27123"  # Local REST API — solo localhost, nginx hace proxy
+      - "127.0.0.1:27123:27123"  # Local REST API HTTP
+      - "127.0.0.1:27124:27124"  # Local REST API HTTPS
     restart: unless-stopped
     security_opt:
       - seccomp:unconfined
