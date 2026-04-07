@@ -16,6 +16,7 @@ services:
       - ./vault:/config/Obsidian\ Vault   # bind mount: datos SIEMPRE en el host
     ports:
       - "3010:3000"   # Web UI (KasmVNC) — evita conflicto con otros servicios
+      - "127.0.0.1:27123:27123"  # Local REST API — solo localhost, nginx hace proxy
     restart: unless-stopped
     security_opt:
       - seccomp:unconfined
