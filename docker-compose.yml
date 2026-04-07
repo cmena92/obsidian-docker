@@ -1,0 +1,49 @@
+services:
+
+  # ─────────────────────────────────────────
+  # Obsidian GUI (acceso visual via browser)
+  # KasmVNC - liviano y sin instalación local
+  # ─────────────────────────────────────────
+  obsidian:
+    image: lscr.io/linuxserver/obsidian:latest
+    container_name: obsidian
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Costa_Rica
+    volumes:
+      - obsidian-config:/config
+      - ./vault:/config/Obsidian\ Vault   # bind mount: datos SIEMPRE en el host
+    ports:
+      - "3010:3000"   # Web UI (KasmVNC) — evita conflicto con otros servicios
+    restart: unless-stopped
+    security_opt:
+      - seccomp:unconfined
+    mem_limit: 1g       # limitar RAM — el servidor tiene solo 3.8GB
+    cpus: "0.8"
+
+  # ─────────────────────────────────────────
+  # MCP Server — para Claude y otros agentes
+  # Se conecta al Local REST API plugin de Obsidian
+  # ─────────────────────────────────────────
+  mcp-obsidian:
+    image: node:20-alpine
+    container_name: obsidian-mcp
+    working_dir: /app
+    command: >
+      sh -c "npm install -g mcp-obsidian 2>/dev/null; npx mcp-obsidian"
+    environment:
+      - OBSIDIAN_API_KEY=${OBSIDIAN_API_KEY}
+      - OBSIDIAN_HOST=http://obsidian:27123
+      - PORT=3001
+    ports:
+      - "3001:3001"
+    depends_on:
+      - obsidian
+    restart: unless-stopped
+    mem_limit: 256m
+    cpus: "0.2"
+
+volumes:
+  obsidian-config:
+    driver: local
